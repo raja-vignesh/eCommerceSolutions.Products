@@ -1,6 +1,6 @@
 ﻿
 
 namespace Products.Infra;
-public class ApplicationDbContext
+public class ApplicationDbContext 
 {
 }
