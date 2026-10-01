@@ -9,7 +9,7 @@ public static class ServiceCollectionExtension
     public static IServiceCollection AddInfra(this IServiceCollection serviceCollection, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        serviceCollection.AddDbContext<ApplicationDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+        serviceCollection.AddDbContext<ApplicationDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)).EnableSensitiveDataLogging());
         return serviceCollection;
     }
 }

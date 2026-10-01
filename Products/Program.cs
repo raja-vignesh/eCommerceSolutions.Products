@@ -1,25 +1,50 @@
 
 
-
 using Products.Api.Seeder;
+using Serilog;
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
 
-var builder = WebApplication.CreateBuilder(args);
+    // Add services to the container.
 
-// Add services to the container.
+    builder.Services.AddControllers();
 
-builder.Services.AddControllers();
+    builder.Services.AddInfra(builder.Configuration).AddCore();
 
-builder.Services.AddInfra(builder.Configuration).AddCore();
 
-var app = builder.Build();
+    builder.Host.UseSerilog((context, services, configuration) =>
+    {
+        configuration
+            .ReadFrom.Configuration(context.Configuration)
+            .ReadFrom.Services(services);
+    });
 
-await DbSeeder.Seed(app.Services);
-// Configure the HTTP request pipeline.
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
 
-app.UseHttpsRedirection();
+    var app = builder.Build();
 
-app.UseAuthorization();
+    app.UseSerilogRequestLogging();
 
-app.MapControllers();
+    await DbSeeder.Seed(app.Services);
+    // Configure the HTTP request pipeline.
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    
+    app.UseHttpsRedirection();
 
-app.Run();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application startup failed");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
