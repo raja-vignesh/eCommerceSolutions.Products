@@ -4,12 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Products.Domain.Entities;
 
 namespace Products.Infra.Repository;
-public class ProductsRepositroy(ApplicationDbContext applicationDbContext)
+public class ProductsRepository(ApplicationDbContext applicationDbContext)
 {
-    public async Task<IEnumerable<Product>> GetProductsAsync(CancellationToken cancellationToken = default)
+    public async Task<(int totalCount,IEnumerable<Product> products)> GetProductsAsync(int pageSize = 10, int pageNumber = 1, CancellationToken cancellationToken = default)
     {
-        var products = await applicationDbContext.Products.AsNoTracking().ToListAsync(cancellationToken);
-        return products;
+        var query =  applicationDbContext.Products.AsNoTracking();
+        var totalCount = await query.CountAsync(cancellationToken);
+        var products = await query.OrderBy(p => p.ProductId).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        return (totalCount,products);
     }
 
     public async Task<bool> ExistsAsync(Guid productId, CancellationToken cancellationToken = default)
@@ -47,6 +49,24 @@ public class ProductsRepositroy(ApplicationDbContext applicationDbContext)
             return product;
         }
         return null;
+    }
+
+    public async Task<Product?> GetProductAsync(Guid productId, CancellationToken cancellationToken = default)
+    {
+        return await applicationDbContext.Products.AsNoTracking().FirstOrDefaultAsync(x => x.ProductId == productId,cancellationToken);     
+    }
+
+    public async Task<(int totalCount,IEnumerable<Product> products)> SearchProducts( string searchTerm, int pageSize = 10, int pageNumber = 1, CancellationToken cancellationToken = default)
+    {
+        IQueryable<Product> query = applicationDbContext.Products.AsNoTracking();
+        if ( !string.IsNullOrWhiteSpace(searchTerm))
+        {
+            searchTerm = searchTerm.Trim();
+            query = query.Where(p => p.ProductName.Contains(searchTerm));
+        }
+        var totalCount = await query.CountAsync(cancellationToken);
+        var products = await query.OrderBy(p => p.ProductId).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        return (totalCount,products);
     }
 
 } 
