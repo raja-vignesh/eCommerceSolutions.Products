@@ -2,9 +2,10 @@
 
 using Microsoft.EntityFrameworkCore;
 using Products.Domain.Entities;
+using Products.Domain.RepositoryContracts;
 
 namespace Products.Infra.Repository;
-public class ProductsRepository(ApplicationDbContext applicationDbContext)
+public class ProductsRepository(ApplicationDbContext applicationDbContext) : IProductsRepository
 {
     public async Task<(int totalCount,IEnumerable<Product> products)> GetProductsAsync(int pageSize = 10, int pageNumber = 1, CancellationToken cancellationToken = default)
     {

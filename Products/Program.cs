@@ -22,12 +22,14 @@ try
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
+    builder.Services.AddProblemDetails();
 
     var app = builder.Build();
 
     app.UseSerilogRequestLogging();
 
     await DbSeeder.Seed(app.Services);
+
     // Configure the HTTP request pipeline.
     app.UseSwagger();
     app.UseSwaggerUI();
