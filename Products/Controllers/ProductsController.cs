@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Products.Core.Commands.CreateProduct;
 using Products.Core.Commands.DeleteProduct;
+using Products.Core.Commands.UpdateProduct;
 using Products.Core.Dtos;
 using Products.Core.Queries.GetProductById;
 using Products.Core.Queries.GetProductBySearch;
@@ -70,4 +71,17 @@ public class ProductsController(IMediator mediator, ILogger<ProductsController> 
         await mediator.Send(new DeleteProductCommand(productId), cancellationToken);
         return NoContent();
     }
+
+    [HttpPut("{productId:guid}")]
+    [ProducesResponseType(typeof(ProductsResponseDto),statusCode:StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), statusCode: StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), statusCode: StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ProblemDetails), statusCode: StatusCodes.Status404NotFound)]
+
+    public async Task<ActionResult<ProductsResponseDto>> Update(Guid productId, UpdateProductCommand updateProductCommand, CancellationToken cancellationToken = default)
+    {
+        updateProductCommand.ProductId = productId;
+        return Ok(await mediator.Send(updateProductCommand, cancellationToken));   
+    }
+
 }
