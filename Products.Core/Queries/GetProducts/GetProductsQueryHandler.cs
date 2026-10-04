@@ -13,11 +13,11 @@ public class GetProductsQueryHandler(IProductsRepository productRepository,ILogg
    
     public async Task<PagedResult<ProductsResponseDto>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
     {
-        logger.LogInformation("GetProducts query");
-        var products = await productRepository.GetProductsAsync(request.PageSize, request.PageNumber, cancellationToken);
-        logger.LogInformation("{Count} products fetched", products.totalCount);
-        var result = mapper.Map<IEnumerable<ProductsResponseDto>>(products.products);
-        var pagedResult = new PagedResult<ProductsResponseDto>(result,products.totalCount,request.PageNumber,request.PageSize);
-        return pagedResult;
+        logger.LogInformation("GetProductsquery PageNumber:{PageNumber} PageSize:{PageSize}",request.PageNumber,request.PageSize);
+        var (totalCount,products) = await productRepository.GetProductsAsync(request.PageSize, request.PageNumber, cancellationToken);
+        logger.LogInformation("{Count} products fetched", totalCount);
+        var result = mapper.Map<IEnumerable<ProductsResponseDto>>(products);
+        return new PagedResult<ProductsResponseDto>(result,totalCount,request.PageNumber,request.PageSize);
+        
     }
 }

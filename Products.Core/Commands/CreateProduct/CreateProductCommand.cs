@@ -1,12 +1,11 @@
 ﻿
-
+using MediatR;
+using Products.Core.Dtos;
 using Products.Core.enums;
 
-namespace Products.Core.Dtos;
-public class ProductsResponseDto
+namespace Products.Core.Commands.CreateProduct;
+public class CreateProductCommand : IRequest<ProductsResponseDto>
 {
-    public Guid ProductId { get; set; }
-
     public string ProductName { get; set; } = default!;
 
     public CategoryOptions Category { get; set; } = default!;

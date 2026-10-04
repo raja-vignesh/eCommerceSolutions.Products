@@ -1,14 +1,20 @@
 
 
+using Products.Api.Middlewares;
 using Products.Api.Seeder;
 using Serilog;
+using System.Text.Json.Serialization;
 try
 {
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    }); ;
 
     builder.Services.AddInfra(builder.Configuration).AddCore();
 
@@ -25,7 +31,7 @@ try
     builder.Services.AddProblemDetails();
 
     var app = builder.Build();
-
+    app.UseMiddleware<ErrorHandlingMiddleware>();
     app.UseSerilogRequestLogging();
 
     await DbSeeder.Seed(app.Services);
