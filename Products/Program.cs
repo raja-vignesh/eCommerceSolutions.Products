@@ -1,6 +1,6 @@
 
 
-using eCommerceUsers.API.Filters;
+using Products.API.Filters;
 using Products.Api.Middlewares;
 using Products.Api.Seeder;
 using Serilog;
