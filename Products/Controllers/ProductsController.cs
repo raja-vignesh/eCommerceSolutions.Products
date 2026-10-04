@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Products.Core.Commands.CreateProduct;
 using Products.Core.Commands.DeleteProduct;
@@ -7,6 +8,8 @@ using Products.Core.Dtos;
 using Products.Core.Queries.GetProductById;
 using Products.Core.Queries.GetProductBySearch;
 using Products.Core.Queries.GetProducts;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 
 namespace Products.Api.Controllers;
 [Route("api/[controller]")]
@@ -17,9 +20,11 @@ public class ProductsController(IMediator mediator, ILogger<ProductsController> 
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<ProductsResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<PagedResult<ProductsResponseDto>>> Get(int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<PagedResult<ProductsResponseDto>>> Get([FromServices]IValidator<GetProductsQuery> validator,int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
     {
         var query = new GetProductsQuery(pageNumber, pageSize);
+        var validationError = await ValidateRequestAsync(validator, query, cancellationToken);
+        if (validationError is not null) return validationError;
         var results = await mediator.Send(query, cancellationToken);
         return Ok(results);
     }
@@ -42,9 +47,11 @@ public class ProductsController(IMediator mediator, ILogger<ProductsController> 
     [ProducesResponseType(
     typeof(ProblemDetails),
     StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PagedResult<ProductsResponseDto>>> Search([FromQuery]string searchTerm, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<PagedResult<ProductsResponseDto>>> Search([FromServices] IValidator<GetProductBySearchQuery> validator, [FromQuery]string searchTerm, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
     {
         var query = new GetProductBySearchQuery(searchTerm, pageNumber, pageSize);
+        var validationError = await ValidateRequestAsync(validator, query, cancellationToken);
+        if (validationError is not null) return validationError;
         return Ok(await mediator.Send(query, cancellationToken));
     }
 
@@ -84,4 +91,15 @@ public class ProductsController(IMediator mediator, ILogger<ProductsController> 
         return Ok(await mediator.Send(updateProductCommand, cancellationToken));   
     }
 
+    protected async Task<ActionResult?> ValidateRequestAsync<T>(IValidator<T> validator,T request, CancellationToken cancellationToken = default)
+    {
+        var validation = await validator.ValidateAsync(request, cancellationToken);
+        if (validation.IsValid) return null;
+        foreach(var error in validation.Errors)
+        {
+            ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+        }
+
+        return ValidationProblem(ModelState);
+    }
 }

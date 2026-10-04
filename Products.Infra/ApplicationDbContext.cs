@@ -20,8 +20,7 @@ public class ApplicationDbContext : DbContext
          .Property(b => b.UnitPrice)
          .HasPrecision(10, 2);
         modelBuilder.Entity<Product>()
-         .HasIndex(c => c.ProductName)
-         .IsUnique();
+         .HasIndex(c => c.ProductName);
         modelBuilder.Entity<Product>()
          .Property(p => p.ProductName)
          .HasMaxLength(50);
