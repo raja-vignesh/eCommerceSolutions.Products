@@ -11,7 +11,7 @@ public class ProductsResponseDto
 
     public CategoryOptions Category { get; set; } = default!;
 
-    public double UnitPrice { get; set; }
+    public decimal UnitPrice { get; set; }
 
     public int QuantityInStock { get; set; }
 }

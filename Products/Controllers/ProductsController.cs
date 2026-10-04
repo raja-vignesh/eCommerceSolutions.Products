@@ -20,6 +20,9 @@ public class ProductsController(IMediator mediator, ILogger<ProductsController> 
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<ProductsResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), statusCode: StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(
+    typeof(ValidationProblemDetails),
+    StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResult<ProductsResponseDto>>> Get([FromServices]IValidator<GetProductsQuery> validator,int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
     {
         var query = new GetProductsQuery(pageNumber, pageSize);
