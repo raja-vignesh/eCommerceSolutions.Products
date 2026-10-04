@@ -24,7 +24,7 @@ public class ErrorHandlingMiddleware
             await _next(httpContext);
         }
         catch (Exception ex) {
-            _logger.LogError("Unhandled Exception {TraceId}", httpContext.TraceIdentifier);
+            _logger.LogError("Unhandled Exception {TraceId} {Message}", httpContext.TraceIdentifier, ex.Message);
             var (statusCode, title) = ex switch
             {
                 NotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),

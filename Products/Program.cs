@@ -1,5 +1,6 @@
 
 
+using eCommerceUsers.API.Filters;
 using Products.Api.Middlewares;
 using Products.Api.Seeder;
 using Serilog;
@@ -10,7 +11,7 @@ try
 
     // Add services to the container.
 
-    builder.Services.AddControllers().AddJsonOptions(options =>
+    builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>()).AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(
             new JsonStringEnumConverter());
@@ -39,7 +40,7 @@ try
     // Configure the HTTP request pipeline.
     app.UseSwagger();
     app.UseSwaggerUI();
-    
+
     app.UseHttpsRedirection();
 
     app.UseAuthorization();

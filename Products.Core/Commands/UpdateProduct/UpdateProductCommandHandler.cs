@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Products.Core.Dtos;
 using Products.Domain.Entities;
+using Products.Domain.Exceptions.NotFound;
 using Products.Domain.RepositoryContracts;
 
 namespace Products.Core.Commands.UpdateProduct;
@@ -14,6 +15,11 @@ public class UpdateProductCommandHandler(ILogger<UpdateProductCommandHandler> lo
     {
         logger.LogInformation("update product request: {@request}" , request);
         var product = mapper.Map<Product>(request);
+        var exists = await productsRepository.ExistsAsync(product.ProductId, cancellationToken);
+        if (!exists)
+        {
+            throw new ProductNotFoundException(product.ProductId);
+        }
         var updated = await productsRepository.UpdateProductAsync(product, cancellationToken);
         return mapper.Map<ProductsResponseDto>(updated);
     }
