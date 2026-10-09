@@ -7,7 +7,7 @@ public class GetProductsBySearchValidator : AbstractValidator<GetProductBySearch
 {
     public GetProductsBySearchValidator()
     {
-        RuleFor(p => p.SearchTerm).NotEmpty().NotNull().WithMessage("Please enter search text");
+        RuleFor(p => p.SearchTerm).NotEmpty().WithMessage("Please enter search text");
         RuleFor(p => p.PageNumber).GreaterThan(0).WithMessage("Page number should be greater than 0");
         RuleFor(p => p.PageSize).InclusiveBetween(1,100).WithMessage("Page size must be between 1 and 100");
     }
