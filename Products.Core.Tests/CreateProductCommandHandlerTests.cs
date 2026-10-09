@@ -4,6 +4,7 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using Products.Core.Commands.CreateProduct;
 using Products.Core.Dtos;
@@ -45,5 +46,21 @@ public class CreateProductCommandHandlerTests
 
         _mapperMock.Verify(m => m.Map<ProductsResponseDto>(product), Times.Once());
         _productRepositoryMock.Verify(p => p.AddProductAsync(product,It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task CreateProduct_WhenInvalidRequest_ShouldThrowInternalServerException()
+    {
+        // Arrange
+        var product = _fixture.Create<Product>();
+        var request = _fixture.Create<CreateProductCommand>();
+        _mapperMock.Setup(m => m.Map<Product>(request)).Returns(product);
+        _productRepositoryMock.Setup(p => p.AddProductAsync(product, It.IsAny<CancellationToken>())).ThrowsAsync(new DbUpdateException("Db Error"));
+        // Act 
+        Func<Task> act = async () => await _sut.Handle(request, CancellationToken.None);
+        // Assert
+        await act.Should().ThrowAsync<DbUpdateException>();
+        _productRepositoryMock.Verify(p => p.AddProductAsync(product,It.IsAny<CancellationToken>()), Times.Once());
+
     }
 }
